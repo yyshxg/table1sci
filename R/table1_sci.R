@@ -186,4 +186,88 @@ print.table1sci <- function(x, ...) {
   } else {
     print.data.frame(x)
   }
+}
+
+#' Export Table 1 to File
+#' 
+#' @param table1_result A table1sci object to export
+#' @param filename Character string naming the file to write to
+#' @param format Output format, either "xlsx" or "csv"
+#' @param font_name Font name to use in Excel output
+#' @param font_size Font size to use in Excel output
+#' @return Invisible NULL
+#' @export
+table1_sci_export <- function(table1_result, filename, 
+                            format = c("xlsx", "csv"),
+                            font_name = "Times New Roman",
+                            font_size = 11) {
+    format <- match.arg(format)
+    
+    if (format == "xlsx") {
+        if (!requireNamespace("openxlsx", quietly = TRUE)) {
+            stop("Package 'openxlsx' needed for Excel export. Please install it.",
+                 call. = FALSE)
+        }
+        
+        wb <- openxlsx::createWorkbook()
+        openxlsx::addWorksheet(wb, "Table 1")
+        
+        # 写入数据
+        openxlsx::writeData(wb, "Table 1", table1_result)
+        
+        # 设置SCI格式
+        headerStyle <- openxlsx::createStyle(
+            textDecoration = "bold",
+            border = "bottom",
+            borderStyle = "thin",
+            fontSize = font_size,
+            fontName = font_name,
+            halign = "center",
+            valign = "center",
+            wrapText = TRUE
+        )
+        
+        dataStyle <- openxlsx::createStyle(
+            fontSize = font_size,
+            fontName = font_name,
+            halign = "center",
+            valign = "center"
+        )
+        
+        # 变量名列使用左对齐
+        varStyle <- openxlsx::createStyle(
+            fontSize = font_size,
+            fontName = font_name,
+            halign = "left",
+            valign = "center"
+        )
+        
+        # 应用样式
+        openxlsx::addStyle(wb, "Table 1", headerStyle, 
+                          rows = 1, cols = 1:ncol(table1_result))
+        
+        # 对数据列应用居中对齐
+        openxlsx::addStyle(wb, "Table 1", dataStyle, 
+                          rows = 2:(nrow(table1_result)+1), 
+                          cols = 2:ncol(table1_result), 
+                          gridExpand = TRUE)
+        
+        # 对变量名列应用左对齐
+        openxlsx::addStyle(wb, "Table 1", varStyle,
+                          rows = 2:(nrow(table1_result)+1),
+                          cols = 1,
+                          gridExpand = TRUE)
+        
+        # 设置列宽
+        openxlsx::setColWidths(wb, "Table 1", 
+                              cols = 1:ncol(table1_result), 
+                              widths = "auto")
+        
+        # 保存
+        openxlsx::saveWorkbook(wb, filename, overwrite = TRUE)
+    } else {
+        utils::write.csv(table1_result, filename, row.names = FALSE)
+    }
+    
+    invisible(NULL)
 } 
