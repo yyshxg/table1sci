@@ -3,6 +3,7 @@ exportPattern("^[[:alpha:]]+")
 export(detect_var_type)
 export(perform_test)
 export(table1_sci)
+export(table1_sci_export)
 export(print.table1sci)
 export(print.table1sci_test)
 export(print.table1sci_vartype)
@@ -10,4 +11,6 @@ export(print.table1sci_vartype)
 importFrom("stats", "aov", "chisq.test", "fisher.test", "kruskal.test",
            "median", "na.omit", "p.adjust", "quantile", "sd", "shapiro.test",
            "t.test", "wilcox.test")
-importFrom("utils", "head", "tail") 
+importFrom("utils", "head", "tail")
+importFrom("openxlsx", "createWorkbook", "addWorksheet", "writeData",
+           "createStyle", "addStyle", "setColWidths", "saveWorkbook") 

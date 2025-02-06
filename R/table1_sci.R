@@ -190,12 +190,54 @@ print.table1sci <- function(x, ...) {
 
 #' Export Table 1 to File
 #' 
-#' @param table1_result A table1sci object to export
-#' @param filename Character string naming the file to write to
+#' This function exports a table1sci object to either an Excel (.xlsx) or CSV file.
+#' When exporting to Excel, it applies publication-ready formatting including proper
+#' fonts, alignment, and borders.
+#' 
+#' @param table1_result A table1sci object created by table1_sci()
+#' @param filename Character string naming the file to write to (should end in .xlsx or .csv)
 #' @param format Output format, either "xlsx" or "csv"
-#' @param font_name Font name to use in Excel output
-#' @param font_size Font size to use in Excel output
+#' @param font_name Font name to use in Excel output (default: "Times New Roman")
+#' @param font_size Font size to use in Excel output (default: 11)
+#' 
+#' @details 
+#' When exporting to Excel format, the function applies the following formatting:
+#' \itemize{
+#'   \item Bold headers with bottom border
+#'   \item Center-aligned data cells
+#'   \item Left-aligned variable names
+#'   \item Automatic column width adjustment
+#'   \item Publication-ready font and size
+#' }
+#' 
 #' @return Invisible NULL
+#' 
+#' @examples
+#' \dontrun{
+#' # Create example data
+#' data <- data.frame(
+#'   age = rnorm(100, mean = 60, sd = 10),
+#'   sex = factor(sample(c("Male", "Female"), 100, replace = TRUE)),
+#'   group = factor(sample(c("Treatment", "Control"), 100, replace = TRUE))
+#' )
+#' 
+#' # Generate Table 1
+#' result <- table1_sci(data, vars = c("age", "sex"), group = "group")
+#' 
+#' # Export to Excel
+#' table1_sci_export(result, "table1.xlsx")
+#' 
+#' # Export to CSV
+#' table1_sci_export(result, "table1.csv", format = "csv")
+#' 
+#' # Customize Excel format
+#' table1_sci_export(result, "table1_custom.xlsx",
+#'                  font_name = "Arial",
+#'                  font_size = 12)
+#' }
+#' 
+#' @seealso \code{\link{table1_sci}} for creating the table
+#' 
 #' @export
 table1_sci_export <- function(table1_result, filename, 
                             format = c("xlsx", "csv"),
