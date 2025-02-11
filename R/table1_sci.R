@@ -4,14 +4,14 @@
 #' @param vars Character vector of variable names to include
 #' @param group Grouping variable name
 #' @param var_labels Named character vector of variable labels
-#' @param digits Integer indicating number of decimal places
+#' @param digits Integer indicating number of decimal places for continuous variables (default: 2 for normal distribution, 1 for non-normal)
 #' @param p_digits Integer indicating number of decimal places for p-values
 #' @param adjust_method Method for p-value adjustment in multiple comparisons
 #' @param show_test_stats Logical, whether to show test statistics
 #' @return A data frame containing the formatted Table 1
 #' @export
 table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
-                      digits = 1, p_digits = 3, adjust_method = "none",
+                      digits = 2, p_digits = 3, adjust_method = "none",
                       show_test_stats = TRUE) {
   # Input validation
   if (!is.data.frame(data)) {
@@ -57,19 +57,22 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       row$Variable <- var_label
       
       if (var_info$is_normal) {
-        row$Overall <- sprintf("%.1f ± %.1f",
+        # 正态分布变量使用digits参数指定的小数位数（默认2位）
+        fmt <- paste0("%.", digits, "f ± %.", digits, "f")
+        row$Overall <- sprintf(fmt,
                              mean(data[[var]], na.rm = TRUE),
                              sd(data[[var]], na.rm = TRUE))
         
         if (!is.null(group)) {
           group_stats <- tapply(data[[var]], data[[group]], function(x) {
-            sprintf("%.1f ± %.1f", mean(x, na.rm = TRUE), sd(x, na.rm = TRUE))
+            sprintf(fmt, mean(x, na.rm = TRUE), sd(x, na.rm = TRUE))
           })
           for (level in group_levels) {
             row[[level]] <- group_stats[level]
           }
         }
       } else {
+        # 非正态分布变量保持1位小数
         row$Overall <- sprintf("%.1f (%.1f-%.1f)",
                              median(data[[var]], na.rm = TRUE),
                              quantile(data[[var]], 0.25, na.rm = TRUE),

@@ -17,8 +17,13 @@
 # 安装devtools包（如果尚未安装）
 install.packages("devtools")
 
-# 从GitHub安装table1sci包
+# 从GitHub安装table1sci包（默认方式，需要Rtools）
 devtools::install_github("yyshxg/table1sci")
+
+# 或者使用二进制安装方式（不需要Rtools）
+devtools::install_github("yyshxg/table1sci", 
+                        build_vignettes = FALSE, 
+                        build_manual = FALSE)
 ```
 
 ## 使用方法
@@ -74,7 +79,7 @@ table1_custom <- table1_sci(
 
 - 自动识别连续型和分类型变量
 - 对连续型变量进行正态性检验
-- 支持用户手动指定变量类型
+- 使用categorical_threshold参数控制分类变量的判定（默认值为10，即少于10个唯一值的数值变量会被视为分类变量）
 
 ### 描述统计
 

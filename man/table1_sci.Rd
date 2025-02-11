@@ -9,7 +9,7 @@ table1_sci(
   vars = NULL,
   group = NULL,
   var_labels = NULL,
-  digits = 1,
+  digits = 2,
   p_digits = 3,
   adjust_method = "none",
   show_test_stats = TRUE
@@ -24,7 +24,7 @@ table1_sci(
 
 \item{var_labels}{Named character vector of variable labels}
 
-\item{digits}{Integer indicating number of decimal places}
+\item{digits}{Integer indicating number of decimal places for continuous variables (default: 2 for normal distribution, 1 for non-normal)}
 
 \item{p_digits}{Integer indicating number of decimal places for p-values}
 
