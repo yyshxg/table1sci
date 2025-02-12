@@ -117,7 +117,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
         
         if (show_test_stats) {
           row$`Test Statistics` <- if (!is.na(test_result$statistic)) {
-            sprintf("%s = %.2f", test_result$statistic_name, test_result$statistic)
+            sprintf("%s = %.3f", test_result$statistic_name, test_result$statistic)
           } else {
             ""
           }
@@ -145,7 +145,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
         
         if (show_test_stats) {
           row_label$`Test Statistics` <- if (!is.na(test_result$statistic)) {
-            sprintf("%s = %.2f", test_result$statistic_name, test_result$statistic)
+            sprintf("%s = %.3f", test_result$statistic_name, test_result$statistic)
           } else {
             ""
           }

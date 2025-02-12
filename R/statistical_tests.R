@@ -19,22 +19,39 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
     statistic = NA,
     statistic_name = NA,
     p_value = NA,
-    df = NA
+    df = NA,
+    n_analyzed = NA,  # 添加实际参与分析的样本量
+    n_missing = NA    # 添加缺失值数量
   )
   
-  # Remove NA values
-  complete_data <- na.omit(data[c(var, group)])
+  # 计算缺失值信息
+  total_n <- nrow(data)
+  complete_cases <- complete.cases(data[c(var, group)])
+  n_analyzed <- sum(complete_cases)
+  n_missing <- total_n - n_analyzed
+  
+  result$n_analyzed <- n_analyzed
+  result$n_missing <- n_missing
+  
+  # 如果缺失值过多（例如超过20%），给出警告
+  if (n_missing/total_n > 0.2) {
+    warning(sprintf("High proportion of missing data (%.1f%%) in variable '%s'", 
+                   100*n_missing/total_n, var))
+  }
+  
+  # 获取完整数据用于分析
+  analysis_data <- data[complete_cases, ]
   
   if (var_type == "continuous") {
     if (is.null(is_normal)) {
       stop("is_normal must be specified for continuous variables")
     }
     
-    if (length(unique(complete_data[[group]])) == 2) {
+    if (length(unique(analysis_data[[group]])) == 2) {
       if (is_normal) {
         # t-test for normal distribution
         test_result <- t.test(as.formula(paste(var, "~", group)), 
-                            data = complete_data)
+                            data = analysis_data)
         result$test_type <- "t-test"
         result$statistic <- test_result$statistic
         result$statistic_name <- "t"
@@ -43,7 +60,7 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
       } else {
         # Mann-Whitney U test for non-normal distribution
         test_result <- wilcox.test(as.formula(paste(var, "~", group)), 
-                                 data = complete_data)
+                                 data = analysis_data)
         result$test_type <- "Mann-Whitney U test"
         result$statistic <- test_result$statistic
         result$statistic_name <- "W"
@@ -53,7 +70,7 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
       if (is_normal) {
         # ANOVA for normal distribution
         test_result <- summary(aov(as.formula(paste(var, "~", group)), 
-                                 data = complete_data))[[1]]
+                                 data = analysis_data))[[1]]
         result$test_type <- "ANOVA"
         result$statistic <- test_result$"F value"[1]
         result$statistic_name <- "F"
@@ -62,7 +79,7 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
       } else {
         # Kruskal-Wallis test for non-normal distribution
         test_result <- kruskal.test(as.formula(paste(var, "~", group)), 
-                                  data = complete_data)
+                                  data = analysis_data)
         result$test_type <- "Kruskal-Wallis test"
         result$statistic <- test_result$statistic
         result$statistic_name <- "H"
@@ -72,14 +89,13 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
     }
   } else if (var_type == "categorical") {
     # 创建列联表
-    cont_table <- table(complete_data[[group]], complete_data[[var]])
+    cont_table <- table(analysis_data[[group]], analysis_data[[var]])
     
     # 检查卡方检验的条件
     expected <- chisq.test(cont_table)$expected
     min_expected <- min(expected)
     prop_small_expected <- sum(expected < 5) / length(expected)
     total_n <- sum(cont_table)
-    is_2x2_table <- all(dim(cont_table) == 2)
     
     # 判断使用哪种检验方法：
     # 1. Fisher精确检验的条件：
@@ -92,6 +108,8 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
     #    - 有期望频数 < 5
     #    - 样本量 ≥ 40
     # 3. 其他情况使用普通卡方检验
+    
+    is_2x2_table <- all(dim(cont_table) == 2)
     
     if (min_expected < 1 || prop_small_expected > 0.25 || total_n < 40) {
       # 使用Fisher精确检验
@@ -135,7 +153,7 @@ print.table1sci_test <- function(x, ...) {
   cat("Statistical Test Results:\n")
   cat(sprintf("Test type: %s\n", x$test_type))
   if (!is.na(x$statistic)) {
-    cat(sprintf("%s = %.3f", x$statistic_name, x$statistic))
+    cat(sprintf("%s = %.3f", x$statistic_name, x$statistic))  # 修改为3位小数
     if (!is.na(x$df)) {
       if (length(x$df) == 1) {
         cat(sprintf(", df = %d", x$df))
@@ -146,4 +164,7 @@ print.table1sci_test <- function(x, ...) {
     cat("\n")
   }
   cat(sprintf("p-value = %.4f\n", x$p_value))
+  if (!is.na(x$n_missing) && x$n_missing > 0) {
+    cat(sprintf("Note: %d cases excluded due to missing data\n", x$n_missing))
+  }
 } 
