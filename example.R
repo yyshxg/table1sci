@@ -1,4 +1,5 @@
 # 加载包
+devtools::install_github("yyshxg/table1sci")
 library(table1sci)
 
 #--------------------

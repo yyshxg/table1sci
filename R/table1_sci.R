@@ -41,6 +41,20 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
   results <- as.data.frame(matrix(nrow = 0, ncol = length(col_names)))
   names(results) <- col_names
   
+  # Add sample size row
+  n_row <- as.data.frame(matrix("", nrow = 1, ncol = length(col_names)))
+  names(n_row) <- col_names
+  n_row$Variable <- "N"
+  n_row$Overall <- sprintf("n = %d", nrow(data))
+  
+  if (!is.null(group)) {
+    for (level in group_levels) {
+      n_row[[level]] <- sprintf("n = %d", sum(data[[group]] == level, na.rm = TRUE))
+    }
+  }
+  
+  results <- rbind(n_row, results)
+  
   # Process each variable
   for (var in vars) {
     var_info <- var_types[[var]]

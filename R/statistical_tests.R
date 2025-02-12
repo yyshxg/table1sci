@@ -71,20 +71,45 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
       }
     }
   } else if (var_type == "categorical") {
-    # Create contingency table
+    # 创建列联表
     cont_table <- table(complete_data[[group]], complete_data[[var]])
     
-    # Check conditions for Chi-square test
+    # 检查卡方检验的条件
     expected <- chisq.test(cont_table)$expected
-    if (any(expected < 1) || sum(expected < 5)/length(expected) > 0.2) {
-      # Use Fisher's exact test
+    min_expected <- min(expected)
+    prop_small_expected <- sum(expected < 5) / length(expected)
+    total_n <- sum(cont_table)
+    is_2x2_table <- all(dim(cont_table) == 2)
+    
+    # 判断使用哪种检验方法：
+    # 1. Fisher精确检验的条件：
+    #    - 任何期望频数 < 1
+    #    - 超过1/4的格子期望频数 < 5
+    #    - 样本量 < 40
+    # 2. 连续性校正的卡方检验条件（仅适用于2x2表）：
+    #    - 是2x2表
+    #    - 所有期望频数 ≥ 1
+    #    - 有期望频数 < 5
+    #    - 样本量 ≥ 40
+    # 3. 其他情况使用普通卡方检验
+    
+    if (min_expected < 1 || prop_small_expected > 0.25 || total_n < 40) {
+      # 使用Fisher精确检验
       test_result <- fisher.test(cont_table, simulate.p.value = TRUE)
       result$test_type <- "Fisher's exact test"
       result$p_value <- test_result$p.value
+    } else if (is_2x2_table && min_expected >= 1 && prop_small_expected > 0 && total_n >= 40) {
+      # 使用连续性校正的卡方检验（仅用于2x2表）
+      test_result <- chisq.test(cont_table, correct = TRUE)
+      result$test_type <- "Chi-square test with Yates' correction"
+      result$statistic <- test_result$statistic
+      result$statistic_name <- "χ²"
+      result$p_value <- test_result$p.value
+      result$df <- test_result$parameter
     } else {
-      # Use Chi-square test
-      test_result <- chisq.test(cont_table)
-      result$test_type <- "Chi-square test"
+      # 使用普通卡方检验（Pearson卡方）
+      test_result <- chisq.test(cont_table, correct = FALSE)
+      result$test_type <- "Pearson's Chi-square test"
       result$statistic <- test_result$statistic
       result$statistic_name <- "χ²"
       result$p_value <- test_result$p.value

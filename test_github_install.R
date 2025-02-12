@@ -2,7 +2,7 @@
 if (!require("devtools")) install.packages("devtools")
 
 # 从GitHub安装table1sci包（二进制安装，不需要Rtools）
-devtools::install_github("yyshxg/table1sci", 
+remotes::install_github("yyshxg/table1sci", 
                         build_vignettes = FALSE, 
                         build_manual = FALSE)
 
