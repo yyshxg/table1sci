@@ -8,11 +8,12 @@
 #' @param p_digits Integer indicating number of decimal places for p-values
 #' @param adjust_method Method for p-value adjustment in multiple comparisons
 #' @param show_test_stats Logical, whether to show test statistics
+#' @param auto_normal Logical, whether to automatically determine normality for continuous variables
 #' @return A data frame containing the formatted Table 1
 #' @export
 table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
                       digits = 2, p_digits = 3, adjust_method = "none",
-                      show_test_stats = TRUE) {
+                      show_test_stats = TRUE, auto_normal = TRUE) {
   # Input validation
   if (!is.data.frame(data)) {
     stop("data must be a data frame")
@@ -107,7 +108,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       
       if (!is.null(group)) {
         test_result <- perform_test(data, var, group, var_info$type,
-                                  var_info$is_normal, adjust_method)
+                                  var_info$is_normal, auto_normal, adjust_method)
         
         row$`P-value` <- if (test_result$p_value < 0.001) {
           "<0.001"
@@ -135,7 +136,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       # Get test results for categorical variable
       if (!is.null(group)) {
         test_result <- perform_test(data, var, group, var_info$type,
-                                  var_info$is_normal, adjust_method)
+                                  var_info$is_normal, auto_normal, adjust_method)
         
         row_label$`P-value` <- if (test_result$p_value < 0.001) {
           "<0.001"
@@ -167,7 +168,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
         # Overall statistics
         n_overall <- overall_table[var_level]
         pct_overall <- overall_pct[var_level]
-        row$Overall <- sprintf("%d (%.1f%%)", n_overall, pct_overall)
+        row$Overall <- sprintf("%d (%.1f)", n_overall, pct_overall)
         
         # Group statistics
         if (!is.null(group)) {
@@ -175,7 +176,7 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
             subset_data <- data[data[[group]] == g_level, ]
             n <- sum(subset_data[[var]] == var_level, na.rm = TRUE)
             pct <- 100 * n / nrow(subset_data)
-            row[[g_level]] <- sprintf("%d (%.1f%%)", n, pct)
+            row[[g_level]] <- sprintf("%d (%.1f)", n, pct)
           }
         }
         

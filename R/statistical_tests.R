@@ -5,11 +5,12 @@
 #' @param group Grouping variable name
 #' @param var_type Type of variable ("continuous" or "categorical")
 #' @param is_normal Logical, whether the continuous variable is normally distributed
+#' @param auto_normal Logical, whether to automatically determine normality
 #' @param adjust_method Method for p-value adjustment in multiple comparisons
 #' @return A list containing test results including test type, statistic, and p-value
 #' @export
 perform_test <- function(data, var, group, var_type, is_normal = NULL, 
-                        adjust_method = "none") {
+                        auto_normal = TRUE, adjust_method = "none") {
   if (!var %in% names(data) || !group %in% names(data)) {
     stop("Variable or group not found in data")
   }
@@ -23,8 +24,23 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
   )
   
   if (var_type == "continuous") {
-    if (is.null(is_normal)) {
-      stop("is_normal must be specified for continuous variables")
+    if (!auto_normal) {
+      # 如果不自动判断正态性，则默认使用正态检验
+      is_normal <- TRUE
+    } else {
+      # 对每个组分别进行正态性检验
+      group_levels <- unique(data[[group]])
+      normality_tests <- sapply(group_levels, function(level) {
+        group_data <- data[[var]][data[[group]] == level]
+        if (length(group_data) >= 3) {  # shapiro.test需要至少3个观测值
+          shapiro.test(group_data)$p.value
+        } else {
+          NA
+        }
+      })
+      
+      # 如果任何组的p值小于0.05，则认为不服从正态分布
+      is_normal <- all(normality_tests >= 0.05, na.rm = TRUE)
     }
     
     if (length(unique(data[[group]])) == 2) {

@@ -12,7 +12,8 @@ table1_sci(
   digits = 2,
   p_digits = 3,
   adjust_method = "none",
-  show_test_stats = TRUE
+  show_test_stats = TRUE,
+  auto_normal = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ table1_sci(
 \item{adjust_method}{Method for p-value adjustment in multiple comparisons}
 
 \item{show_test_stats}{Logical, whether to show test statistics}
+
+\item{auto_normal}{Logical, whether to automatically determine normality for continuous variables}
 }
 \value{
 A data frame containing the formatted Table 1

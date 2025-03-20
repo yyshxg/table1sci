@@ -10,6 +10,7 @@ perform_test(
   group,
   var_type,
   is_normal = NULL,
+  auto_normal = TRUE,
   adjust_method = "none"
 )
 }
@@ -23,6 +24,8 @@ perform_test(
 \item{var_type}{Type of variable ("continuous" or "categorical")}
 
 \item{is_normal}{Logical, whether the continuous variable is normally distributed}
+
+\item{auto_normal}{Logical, whether to automatically determine normality}
 
 \item{adjust_method}{Method for p-value adjustment in multiple comparisons}
 }
