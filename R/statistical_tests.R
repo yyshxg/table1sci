@@ -25,7 +25,7 @@ perform_test <- function(data, var, group, var_type, is_normal = NULL,
   
   if (var_type == "continuous") {
     if (!auto_normal) {
-      # 如果不自动判断正态性，则默认使用正态检验
+      # 如果不自动判断正态性，则默认使用正态分布的检验方法
       is_normal <- TRUE
     } else {
       # 对每个组分别进行正态性检验
@@ -160,4 +160,4 @@ print.table1sci_test <- function(x, ...) {
     cat("\n")
   }
   cat(sprintf("p-value = %.4f\n", x$p_value))
-} 
+}

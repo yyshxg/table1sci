@@ -71,7 +71,16 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       names(row) <- col_names
       row$Variable <- var_label
       
-      if (var_info$is_normal) {
+      # 获取实际使用的正态性状态（考虑auto_normal参数）
+      actual_is_normal <- if (!auto_normal) {
+        # 如果不自动判断正态性，则使用正态分布的描述方法
+        TRUE
+      } else {
+        # 否则使用检测到的正态性状态
+        var_info$is_normal
+      }
+      
+      if (actual_is_normal) {
         # 正态分布变量使用digits参数指定的小数位数（默认2位）
         fmt <- paste0("%.", digits, "f ± %.", digits, "f")
         row$Overall <- sprintf(fmt,
@@ -330,4 +339,4 @@ table1_sci_export <- function(table1_result, filename,
     }
     
     invisible(NULL)
-} 
+}

@@ -81,7 +81,7 @@ devtools::install_github("yyshxg/table1sci", force = TRUE)
 ## 功能说明
 
 1. 自动检测变量类型：
-   - 连续型变量：自动进行正态性检验
+   - 连续型变量：自动进行正态性检验（可通过auto_normal参数控制）
    - 分类变量：自动识别并合理展示
 
 2. 统计检验：
@@ -99,4 +99,4 @@ devtools::install_github("yyshxg/table1sci", force = TRUE)
    - 调整小数位数
    - 显示检验统计量
    - 多重比较校正
-   - 导出Excel格式 
+   - 导出Excel格式
