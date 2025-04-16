@@ -184,7 +184,8 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
           for (g_level in group_levels) {
             subset_data <- data[data[[group]] == g_level, ]
             n <- sum(subset_data[[var]] == var_level, na.rm = TRUE)
-            pct <- 100 * n / nrow(subset_data)
+            denom <- sum(!is.na(subset_data[[var]]))
+            pct <- ifelse(denom > 0, 100 * n / denom, NA)
             row[[g_level]] <- sprintf("%d (%.1f)", n, pct)
           }
         }
