@@ -4,16 +4,36 @@
 #' @param vars Character vector of variable names to include
 #' @param group Grouping variable name
 #' @param var_labels Named character vector of variable labels
-#' @param digits Integer indicating number of decimal places for continuous variables (default: 2 for normal distribution, 1 for non-normal)
+#' @param digits Integer indicating number of decimal places for continuous variables.
+#'        For normally distributed variables, this value is used directly.
+#'        For non-normally distributed variables, if digits=2 (default), 1 decimal place is used;
+#'        otherwise the specified value is used.
 #' @param p_digits Integer indicating number of decimal places for p-values
 #' @param adjust_method Method for p-value adjustment in multiple comparisons
 #' @param show_test_stats Logical, whether to show test statistics
 #' @param auto_normal Logical, whether to automatically determine normality for continuous variables
-#' @return A data frame containing the formatted Table 1
+#' @param show_missing Logical, whether to show missing value percentages for each variable (default: FALSE)
+#' @return A data frame containing the formatted Table 1 with class "table1sci"
+#' 
+#' @details 
+#' The function handles missing values appropriately:
+#' \itemize{
+#'   \item For continuous variables, missing values are excluded from calculations
+#'   \item For categorical variables, percentages are calculated based on non-missing values
+#'   \item The sample size row shows the total number of observations in each group
+#' }
+#' 
+#' Statistical tests are selected based on variable type and distribution:
+#' \itemize{
+#'   \item For continuous variables with normal distribution: t-test (2 groups) or ANOVA (>2 groups)
+#'   \item For continuous variables with non-normal distribution: Mann-Whitney U test (2 groups) or Kruskal-Wallis test (>2 groups)
+#'   \item For categorical variables: Chi-square test or Fisher's exact test depending on expected cell counts
+#' }
+#' 
 #' @export
 table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
                       digits = 2, p_digits = 3, adjust_method = "none",
-                      show_test_stats = TRUE, auto_normal = TRUE) {
+                      show_test_stats = TRUE, auto_normal = TRUE, show_missing = FALSE) {
   # Input validation
   if (!is.data.frame(data)) {
     stop("data must be a data frame")
@@ -25,6 +45,11 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
   
   # Detect variable types
   var_types <- detect_var_type(data, vars)
+  
+  # 计算每个变量的缺失值比例
+  missing_rates <- sapply(vars, function(var) {
+    sum(is.na(data[[var]])) / nrow(data) * 100
+  })
   
   # Initialize results table with all necessary columns
   col_names <- c("Variable", "Overall")
@@ -71,6 +96,11 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       names(row) <- col_names
       row$Variable <- var_label
       
+      # 如果需要显示缺失值比例
+      if (show_missing && missing_rates[var] > 0) {
+        row$Variable <- sprintf("%s [%.1f%% missing]", var_label, missing_rates[var])
+      }
+      
       # 获取实际使用的正态性状态（考虑auto_normal参数）
       actual_is_normal <- if (!auto_normal) {
         # 如果不自动判断正态性，则使用正态分布的描述方法
@@ -96,15 +126,17 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
           }
         }
       } else {
-        # 非正态分布变量保持1位小数
-        row$Overall <- sprintf("%.1f (%.1f-%.1f)",
+        # 非正态分布变量使用1位小数，除非digits参数指定为其他值
+        non_normal_digits <- ifelse(digits == 2, 1, digits) # 默认使用1位小数，除非digits被显式设置为其他值
+        fmt <- paste0("%.", non_normal_digits, "f (%.", non_normal_digits, "f-%.", non_normal_digits, "f)")
+        row$Overall <- sprintf(fmt,
                              median(data[[var]], na.rm = TRUE),
                              quantile(data[[var]], 0.25, na.rm = TRUE),
                              quantile(data[[var]], 0.75, na.rm = TRUE))
         
         if (!is.null(group)) {
           group_stats <- tapply(data[[var]], data[[group]], function(x) {
-            sprintf("%.1f (%.1f-%.1f)",
+            sprintf(fmt,
                     median(x, na.rm = TRUE),
                     quantile(x, 0.25, na.rm = TRUE),
                     quantile(x, 0.75, na.rm = TRUE))
@@ -142,6 +174,11 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       names(row_label) <- col_names
       row_label$Variable <- var_label
       
+      # 如果需要显示缺失值比例
+      if (show_missing && missing_rates[var] > 0) {
+        row_label$Variable <- sprintf("%s [%.1f%% missing]", var_label, missing_rates[var])
+      }
+      
       # Get test results for categorical variable
       if (!is.null(group)) {
         test_result <- perform_test(data, var, group, var_info$type,
@@ -166,8 +203,11 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
       
       # Add rows for each level
       var_levels <- levels(factor(data[[var]]))
+      
+      # 计算总体统计量，使用非缺失值作为分母
+      valid_count <- sum(!is.na(data[[var]]))
       overall_table <- table(data[[var]])
-      overall_pct <- prop.table(overall_table) * 100
+      overall_pct <- ifelse(valid_count > 0, 100 * overall_table / valid_count, 0)
       
       for (var_level in var_levels) {
         row <- as.data.frame(matrix("", nrow = 1, ncol = length(col_names)))
@@ -189,6 +229,8 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
             row[[g_level]] <- sprintf("%d (%.1f)", n, pct)
           }
         }
+        
+        # 添加到结果表中
         
         results <- rbind(results, row)
       }

@@ -36,6 +36,12 @@ data_advanced <- data.frame(
     group = factor(sample(c("Treatment", "Control"), n, replace = TRUE))
 )
 
+# 添加一些缺失值
+set.seed(456)
+missing_indices <- sample(1:n, 20)
+data_advanced$ldl[missing_indices[1:10]] <- NA
+data_advanced$smoking[missing_indices[11:20]] <- NA
+
 # 设置变量标签
 var_labels <- c(
     age = "Age (years)",
@@ -47,20 +53,45 @@ var_labels <- c(
     diabetes = "Diabetes"
 )
 
-# 生成高级Table 1
+# 生成高级Table 1（不显示缺失值）
 table1_advanced <- table1_sci(
+    data = data_advanced,
+    vars = c("age", "sex", "bmi", "ldl", "sbp", "smoking", "diabetes"),
+    group = "group",
+    var_labels = var_labels,
+    digits = 1,  # 连续变量保留1位小数
+    p_digits = 3,
+    adjust_method = "fdr",  # 使用FDR方法进行多重比较校正
+    show_test_stats = TRUE,  # 显示检验统计量
+    show_missing = FALSE  # 默认不显示缺失值比例
+)
+
+# 生成显示缺失值的Table 1
+table1_with_missing <- table1_sci(
     data = data_advanced,
     vars = c("age", "sex", "bmi", "ldl", "sbp", "smoking", "diabetes"),
     group = "group",
     var_labels = var_labels,
     digits = 1,
     p_digits = 3,
-    adjust_method = "fdr",  # 使用FDR方法进行多重比较校正
-    show_test_stats = TRUE
+    adjust_method = "fdr",
+    show_test_stats = TRUE,
+    show_missing = TRUE  # 显示缺失值比例
 )
 
 # 打印结果
+cat("\n标准Table 1（不显示缺失值）:\n")
 print(table1_advanced)
+
+# 打印带缺失值信息的结果
+cat("\n带缺失值信息的Table 1:\n")
+print(table1_with_missing)
+
+# 说明缺失值显示的效果
+cat("\n说明：\n")
+cat("1. 当show_missing=TRUE时，变量名后会显示缺失值比例，如[5.0% missing]\n")
+cat("2. 对于分类变量，百分比计算使用非缺失值总数作为分母\n")
+cat("3. 对于连续变量，统计量计算自动排除缺失值\n")
 
 #--------------------
 # 导出为Excel文件
@@ -77,6 +108,10 @@ openxlsx::writeData(wb, "Basic Example", table1)
 openxlsx::addWorksheet(wb, "Advanced Example")
 openxlsx::writeData(wb, "Advanced Example", table1_advanced)
 
+# 添加带缺失值信息的工作表
+openxlsx::addWorksheet(wb, "With Missing Info")
+openxlsx::writeData(wb, "With Missing Info", table1_with_missing)
+
 # 设置样式
 hs <- openxlsx::createStyle(
     textDecoration = "bold",
@@ -87,10 +122,12 @@ hs <- openxlsx::createStyle(
 # 应用样式到表头
 openxlsx::addStyle(wb, "Basic Example", hs, rows = 1, cols = 1:ncol(table1))
 openxlsx::addStyle(wb, "Advanced Example", hs, rows = 1, cols = 1:ncol(table1_advanced))
+openxlsx::addStyle(wb, "With Missing Info", hs, rows = 1, cols = 1:ncol(table1_with_missing))
 
 # 自动调整列宽
 openxlsx::setColWidths(wb, "Basic Example", cols = 1:ncol(table1), widths = "auto")
 openxlsx::setColWidths(wb, "Advanced Example", cols = 1:ncol(table1_advanced), widths = "auto")
+openxlsx::setColWidths(wb, "With Missing Info", cols = 1:ncol(table1_with_missing), widths = "auto")
 
 # 保存文件
-openxlsx::saveWorkbook(wb, "table1_examples.xlsx", overwrite = TRUE) 
+openxlsx::saveWorkbook(wb, "table1_examples.xlsx", overwrite = TRUE)

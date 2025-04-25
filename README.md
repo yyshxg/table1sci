@@ -69,7 +69,9 @@ table1_custom <- table1_sci(
   digits = 2,              # 小数位数
   p_digits = 3,           # p值小数位数
   adjust_method = "fdr",  # p值校正方法
-  show_test_stats = TRUE  # 显示检验统计量
+  auto_normal = TRUE,     # 自动进行正态性检验
+  show_test_stats = TRUE, # 显示检验统计量
+  show_missing = TRUE     # 显示缺失值比例
 )
 ```
 
@@ -89,6 +91,7 @@ table1_custom <- table1_sci(
 
 分类型变量：
 - 频数和百分比：n (%)
+- 百分比计算已优化，使用非缺失值总数作为分母，确保比例计算准确
 
 ### 统计检验
 
@@ -99,6 +102,13 @@ table1_custom <- table1_sci(
 分类型变量：
 - 卡方检验
 - Fisher精确检验（当期望频数较小时自动选择）
+
+### 缺失值处理
+
+- 支持通过show_missing参数显示每个变量的缺失值比例
+- 变量名后会显示缺失值百分比，如[5.0% missing]
+- 对于分类变量，百分比计算使用非缺失值总数作为分母
+- 对于连续变量，统计量计算自动排除缺失值
 
 ### 输出格式
 
