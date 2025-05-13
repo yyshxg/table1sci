@@ -28,15 +28,29 @@ test_that("detect_var_type works correctly", {
     numeric_normal = rnorm(100),
     numeric_uniform = runif(100),
     categorical = factor(sample(c("A", "B", "C"), 100, replace = TRUE)),
-    binary = sample(c(0, 1), 100, replace = TRUE)
+    binary = sample(c(0, 1), 100, replace = TRUE),
+    small_range = sample(1:4, 100, replace = TRUE),
+    large_range = sample(1:10, 100, replace = TRUE)
   )
   
-  # Test variable type detection
+  # Test default behavior (auto_detect_type = TRUE, categorical_threshold = 5)
   types <- detect_var_type(data)
   expect_type(types, "list")
   expect_true(types$numeric_normal$type == "continuous")
   expect_true(types$categorical$type == "categorical")
   expect_true(types$binary$type == "categorical")
+  expect_true(types$small_range$type == "categorical")
+  expect_true(types$large_range$type == "continuous")
+  
+  # Test with auto_detect_type = FALSE
+  types2 <- detect_var_type(data, auto_detect_type = FALSE)
+  expect_true(types2$small_range$type == "continuous")
+  expect_true(types2$large_range$type == "continuous")
+  
+  # Test with different categorical_threshold
+  types3 <- detect_var_type(data, categorical_threshold = 10)
+  expect_true(types3$small_range$type == "categorical")
+  expect_true(types3$large_range$type == "categorical")
 })
 
 test_that("perform_test selects appropriate tests", {
@@ -61,4 +75,4 @@ test_that("perform_test selects appropriate tests", {
   # Test categorical
   test3 <- perform_test(data, "categorical", "group", "categorical")
   expect_true(test3$test_type %in% c("Chi-square test", "Fisher's exact test"))
-}) 
+})

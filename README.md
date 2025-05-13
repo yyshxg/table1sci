@@ -66,12 +66,14 @@ table1_custom <- table1_sci(
   vars = c("age", "sex", "bmi"),
   group = "group",
   var_labels = var_labels,
-  digits = 2,              # 小数位数
-  p_digits = 3,           # p值小数位数
-  adjust_method = "fdr",  # p值校正方法
-  auto_normal = TRUE,     # 自动进行正态性检验
-  show_test_stats = TRUE, # 显示检验统计量
-  show_missing = TRUE     # 显示缺失值比例
+  digits = 2,                  # 小数位数
+  p_digits = 3,                # p值小数位数
+  adjust_method = "fdr",       # p值校正方法
+  auto_normal = TRUE,          # 自动进行正态性检验
+  show_test_stats = TRUE,      # 显示检验统计量
+  show_missing = TRUE,         # 显示缺失值比例
+  auto_detect_type = TRUE,     # 自动检测变量类型
+  categorical_threshold = 5    # 分类变量判定阈值
 )
 ```
 
@@ -79,9 +81,10 @@ table1_custom <- table1_sci(
 
 ### 变量类型检测
 
-- 自动识别连续型和分类型变量
+- 自动识别连续型和分类型变量（可通过auto_detect_type参数控制，默认为TRUE）
 - 对连续型变量进行正态性检验
-- 使用categorical_threshold参数控制分类变量的判定（默认值为10，即少于10个唯一值的数值变量会被视为分类变量）
+- 使用categorical_threshold参数控制分类变量的判定（默认值为5，即少于5个唯一值的数值变量会被视为分类变量）
+- 已转为因子型的变量不受auto_detect_type参数影响，始终被视为分类变量
 
 ### 描述统计
 

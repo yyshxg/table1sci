@@ -13,6 +13,8 @@
 #' @param show_test_stats Logical, whether to show test statistics
 #' @param auto_normal Logical, whether to automatically determine normality for continuous variables
 #' @param show_missing Logical, whether to show missing value percentages for each variable (default: FALSE)
+#' @param auto_detect_type Logical, whether to automatically detect variable types based on unique values (default: TRUE)
+#' @param categorical_threshold Integer. Variables with unique values less than this will be treated as categorical (default: 5)
 #' @return A data frame containing the formatted Table 1 with class "table1sci"
 #' 
 #' @details 
@@ -33,7 +35,8 @@
 #' @export
 table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
                       digits = 2, p_digits = 3, adjust_method = "none",
-                      show_test_stats = TRUE, auto_normal = TRUE, show_missing = FALSE) {
+                      show_test_stats = TRUE, auto_normal = TRUE, show_missing = FALSE,
+                      auto_detect_type = TRUE, categorical_threshold = 5) {
   # Input validation
   if (!is.data.frame(data)) {
     stop("data must be a data frame")
@@ -44,7 +47,8 @@ table1_sci <- function(data, vars = NULL, group = NULL, var_labels = NULL,
   }
   
   # Detect variable types
-  var_types <- detect_var_type(data, vars)
+  var_types <- detect_var_type(data, vars, categorical_threshold = categorical_threshold, 
+                             auto_detect_type = auto_detect_type)
   
   # 计算每个变量的缺失值比例
   missing_rates <- sapply(vars, function(var) {

@@ -3,11 +3,12 @@
 #' @param data A data frame containing the variables to be analyzed
 #' @param vars Character vector of variable names to be analyzed
 #' @param normality_threshold Numeric value for Shapiro-Wilk test p-value threshold (default: 0.05)
-#' @param categorical_threshold Integer. Variables with unique values less than this will be treated as categorical
+#' @param categorical_threshold Integer. Variables with unique values less than this will be treated as categorical (default: 5)
+#' @param auto_detect_type Logical. Whether to automatically detect variable types based on unique values (default: TRUE)
 #' @return A list containing variable types and normality test results
 #' @export
 detect_var_type <- function(data, vars = NULL, normality_threshold = 0.05, 
-                           categorical_threshold = 10) {
+                           categorical_threshold = 5, auto_detect_type = TRUE) {
   if (is.null(vars)) {
     vars <- names(data)
   }
@@ -32,7 +33,7 @@ detect_var_type <- function(data, vars = NULL, normality_threshold = 0.05,
     
     # Detect type
     if (is.factor(var_data) || is.character(var_data) || 
-        (is.numeric(var_data) && length(unique(na.omit(var_data))) < categorical_threshold)) {
+        (auto_detect_type && is.numeric(var_data) && length(unique(na.omit(var_data))) < categorical_threshold)) {
       var_info$type <- "categorical"
     } else if (is.numeric(var_data)) {
       var_info$type <- "continuous"
@@ -77,4 +78,4 @@ print.table1sci_vartype <- function(x, ...) {
     }
     cat("\n")
   }
-} 
+}

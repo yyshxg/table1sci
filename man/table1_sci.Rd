@@ -17,23 +17,32 @@ table1_sci(
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables}
+  \item{data}{A data frame containing the variables}
 
-\item{vars}{Character vector of variable names to include}
+  \item{vars}{Character vector of variable names to include}
 
-\item{group}{Grouping variable name}
+  \item{group}{Grouping variable name}
 
-\item{var_labels}{Named character vector of variable labels}
+  \item{var_labels}{Named character vector of variable labels}
 
-\item{digits}{Integer indicating number of decimal places for continuous variables (default: 2 for normal distribution, 1 for non-normal)}
+  \item{digits}{Integer indicating number of decimal places for continuous variables.
+For normally distributed variables, this value is used directly.
+For non-normally distributed variables, if digits=2 (default), 1 decimal place is used;
+otherwise the specified value is used.}
 
-\item{p_digits}{Integer indicating number of decimal places for p-values}
+  \item{p_digits}{Integer indicating number of decimal places for p-values}
 
-\item{adjust_method}{Method for p-value adjustment in multiple comparisons}
+  \item{adjust_method}{Method for p-value adjustment in multiple comparisons}
 
-\item{show_test_stats}{Logical, whether to show test statistics}
+  \item{show_test_stats}{Logical, whether to show test statistics}
 
-\item{auto_normal}{Logical, whether to automatically determine normality for continuous variables}
+  \item{auto_normal}{Logical, whether to automatically determine normality for continuous variables}
+
+  \item{show_missing}{Logical, whether to show missing value percentages for each variable (default: FALSE)}
+
+  \item{auto_detect_type}{Logical, whether to automatically detect variable types based on unique values (default: TRUE)}
+
+  \item{categorical_threshold}{Integer. Variables with unique values less than this will be treated as categorical (default: 5)}
 }
 \value{
 A data frame containing the formatted Table 1

@@ -8,17 +8,16 @@ detect_var_type(
   data,
   vars = NULL,
   normality_threshold = 0.05,
-  categorical_threshold = 10
+  categorical_threshold = 5,
+  auto_detect_type = TRUE
 )
 }
 \arguments{
-\item{data}{A data frame containing the variables to be analyzed}
-
-\item{vars}{Character vector of variable names to be analyzed}
-
-\item{normality_threshold}{Numeric value for Shapiro-Wilk test p-value threshold (default: 0.05)}
-
-\item{categorical_threshold}{Integer. Variables with unique values less than this will be treated as categorical}
+  \item{data}{A data frame containing the variables to be analyzed}
+  \item{vars}{Character vector of variable names to be analyzed}
+  \item{normality_threshold}{Numeric value for Shapiro-Wilk test p-value threshold (default: 0.05)}
+  \item{categorical_threshold}{Integer. Variables with unique values less than this will be treated as categorical (default: 5)}
+  \item{auto_detect_type}{Logical. Whether to automatically detect variable types based on unique values (default: TRUE)}
 }
 \value{
 A list containing variable types and normality test results
